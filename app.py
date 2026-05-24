@@ -14,7 +14,9 @@ def main():
 if __name__ == "__main__":
     main()
 
-    def add(a, b):
+def add_numbers(a, b):
+    """Simple function to add two numbers for testing."""
     return a + b
 
-print(add(5, 3))
+if __name__ == "__main__":
+    print(f"Running application directly... 2 + 3 = {add_numbers(2, 3)}")
