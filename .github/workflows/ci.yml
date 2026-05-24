@@ -1,4 +1,4 @@
-name: Python CI Pipeline
+name: Python CI/CD Pipeline
 
 on:
   push:
@@ -9,9 +9,9 @@ on:
       - main
 
 jobs:
+  # Job 1: Run your automated test suite
   test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -29,3 +29,30 @@ jobs:
       - name: Run pytest
         run: |
           pytest
+
+  # Job 2: Build and push the Docker container (Only runs if 'test' passes)
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets::DOCKERHUB_USERNAME }}
+          password: ${{ secrets::DOCKERHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          # This tags the image as 'latest' under your repository namespace
+          tags: ${{ secrets::DOCKERHUB_USERNAME }}/gitact-app:latest
